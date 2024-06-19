@@ -67,6 +67,9 @@ def test_gkr_2layers():
         print("")
 
     r = random_challenge(c.layers[-1].num_outputs)
+    # evals[-1] ==> [f0(0), f0(1)], the output claim
+    # output_claim ==> sum over [f0(0), f0(1)] to reduce the num of claims
+    #                  by Algorithm 1. FunctionEvaluations
     output_claim = eval_multi_linear_poly(evals[-1], r)
     print(f"output claim: {output_claim.n}")
 

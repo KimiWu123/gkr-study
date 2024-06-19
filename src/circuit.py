@@ -22,15 +22,19 @@ class Layer:
         self.adds = adds
         self.muls = muls
 
-    def phase1_init(self, eq_r: List[Field], f3: List[Field]) -> List[Field]:
-        f1_g = [Field.ZERO()] * (1 << self.num_inputs)
+    # calculate hg(x) in Chapter 3.3 (Algorithm 4. Initialize_PhaseOne)
+    # hg(x) = sum_of(f1(g, x, y) * f3(y))
+    # f1(g, x, y) = I(g, z) * f1(z, x, y), I(g, z) is `eq_g` here.
+    # Phase 1, assuming x is fixed and calculate the evaluation of y
+    def phase1_init(self, eq_g: List[Field], f3: List[Field]) -> List[Field]:
+        h_g = [Field.ZERO()] * (1 << self.num_inputs)
         for add in self.adds:
             (z, x) = (add[0], add[1])
-            f1_g[x] = f1_g[x] + eq_r[z]
+            h_g[x] += eq_g[z]
         for mul in self.muls:
             (z, x, y) = (mul[0], mul[1], mul[2])
-            f1_g[x] = f1_g[x] + eq_r[z] * f3[y]
-        return f1_g
+            h_g[x] += eq_g[z] * f3[y]
+        return h_g
 
     def phase_1_eval(self, eq_r: List[Field], eq_x: List[Field]) -> Field:
         sum = Field.ZERO()
@@ -39,11 +43,12 @@ class Layer:
             sum += eq_r[z] * eq_x[x]
         return sum
 
-    def phase2_init(self, eq_r: List[Field], f3: List[Field]) -> List[Field]:
+    # Algorithm 5, Initialize_PhaseTwo
+    def phase2_init(self, eq_g: List[Field], f3: List[Field]) -> List[Field]:
         f1_g = [Field.ZERO()] * (1 << self.num_inputs)
         for mul in self.muls:
             (z, x, y) = (mul[0], mul[1], mul[2])
-            f1_g[y] = f1_g[y] + eq_r[z] * f3[x]
+            f1_g[y] += eq_g[z] * f3[x]
         return f1_g
 
 
@@ -68,7 +73,7 @@ class Circuit:
         for layer in self.layers:
             # input comes from previous output
             input = evals[-1]
-            output = [Field(0)] * (1 << layer.num_outputs)
+            output = [Field.ZERO()] * (1 << layer.num_outputs)
             for add in layer.adds:
                 output[add[0]] = output[add[0]] + input[add[1]]
             for mul in layer.muls:
