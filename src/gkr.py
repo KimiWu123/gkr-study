@@ -94,7 +94,7 @@ def prove(
         print_list(eq_g, "eq_g")
         hg_y = layer.phase2_init(eq_g, eq_x)
 
-        claim_y = claim_x - layer.phase_1_eval(eq_g, eq_x)
+        claim_y = claim_x - layer.phase1_eval(eq_g, eq_x)
         print("claim_y ", claim_y.n)
 
         v = random_challenge(num_vars)
@@ -143,23 +143,29 @@ def verify(
         u = []
         for _ in range(num_vars):
             u.append(transcript.r.pop())
-        verify_sumcheck(num_vars, claimed_output, u, coeffs_in_layers[0])
+        claim_x = verify_sumcheck(num_vars, claimed_output, u, coeffs_in_layers[0])
 
         eq_x = []
         input_x = claim_in_layer[0].eval
         for eq in eq_poly(u):
             eq_x.append(input_x * eq)
 
+        claim_y = claim_x - layer.phase1_eval(eq_g, eq_x)
+
         # phase 2
         v = []
         for _ in range(num_vars):
             v.append(transcript.r.pop())
-        verify_sumcheck(num_vars, claimed_output, v, coeffs_in_layers[1])
+        claim_y = verify_sumcheck(num_vars, claimed_output, v, coeffs_in_layers[1])
 
         eq_y = []
         input_y = claim_in_layer[1].eval
         for eq in eq_poly(v):
             eq_y.append(input_y * eq)
+
+        assert claim_y == layer.phase2_eval(
+            eq_g, eq_x, eq_y
+        ), "unmatched sumcheck evaluation"
 
         claims = (SingleClaim(u, input_x), SingleClaim(v, input_y))
 

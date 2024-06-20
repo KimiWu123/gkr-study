@@ -17,7 +17,7 @@ def fix_var(evals: List[Field], r: Field) -> List[Field]:
 
 
 def eval_multi_linear_poly(evals: List[Field], r: List[Field]) -> Field:
-    assert len(evals) == (1 << len(r)), "length inconsistency"
+    assert len(evals) == (1 << len(r)), "length inconsistent"
     e = evals.copy()
     for ri in r:
         e = fix_var(e, ri)

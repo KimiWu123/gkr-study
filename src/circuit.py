@@ -23,7 +23,7 @@ class Layer:
         self.muls = muls
 
     # calculate hg(x) in Chapter 3.3 (Algorithm 4. Initialize_PhaseOne)
-    # hg(x) = sum_of(f1(g, x, y) * f3(y))
+    # hg(x) = sum(f1(g, x, y) * f3(y))
     # f1(g, x, y) = I(g, z) * f1(z, x, y), I(g, z) is `eq_g` here.
     # Phase 1, assuming x is fixed and calculate the evaluation of y
     def phase1_init(self, eq_g: List[Field], f3: List[Field]) -> List[Field]:
@@ -36,7 +36,7 @@ class Layer:
             h_g[x] += eq_g[z] * f3[y]
         return h_g
 
-    def phase_1_eval(self, eq_r: List[Field], eq_x: List[Field]) -> Field:
+    def phase1_eval(self, eq_r: List[Field], eq_x: List[Field]) -> Field:
         sum = Field.ZERO()
         for add in self.adds:
             (z, x) = (add[0], add[1])
@@ -50,6 +50,15 @@ class Layer:
             (z, x, y) = (mul[0], mul[1], mul[2])
             f1_g[y] += eq_g[z] * f3[x]
         return f1_g
+
+    def phase2_eval(
+        self, eq_g: List[Field], eq_x: List[Field], eq_y: List[Field]
+    ) -> Field:
+        sum = Field.ZERO()
+        for mul in self.muls:
+            (z, x, y) = (mul[0], mul[1], mul[2])
+            sum += eq_g[z] * eq_x[x] * eq_y[y]
+        return sum
 
 
 class Circuit:
