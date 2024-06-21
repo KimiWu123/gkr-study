@@ -55,7 +55,7 @@ def eval_univar_poly(coeffs: Coeff_Poly, x: Field) -> Field:
 # Algorithm 3. SumCheckProduct
 def prove_sumcheck(
     num_vars: int, claim: Field, f2: List[Field], hg: List[Field], r: List[Field]
-) -> (Field, List[Coeff_Poly]):
+) -> (Field, List[Coeff_Poly], Field):
 
     assert len(f2) == len(hg), "len of f2 and hg is not equal"
     assert len(f2) == 1 << len(r), "len of random value is not consistent with len(f2)"
@@ -98,7 +98,7 @@ def prove_sumcheck(
         print_list(g, "g")
         print(f"claim: {claim.n}")
 
-    return (claim, coeffs_in_layers)
+    return (claim, coeffs_in_layers, f[0])
 
 
 def verify_sumcheck(
