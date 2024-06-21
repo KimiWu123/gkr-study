@@ -106,6 +106,9 @@ def verify_sumcheck(
 ) -> Field:
     for i in range(num_vars):
         uni_poly = coeffs_in_layers[i]
+        eval_0 = eval_univar_poly(uni_poly, Field.ZERO())
+        eval_1 = eval_univar_poly(uni_poly, Field.ONE())
+        assert claim == eval_0 + eval_1
         claim = eval_univar_poly(uni_poly, r[i])
 
     return claim
