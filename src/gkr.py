@@ -78,10 +78,9 @@ def prove(
 
         u = random_challenge(num_vars)
         r.extend(u)
-        (claim_x, coeffs_x_in_layers) = prove_sumcheck(
+        (claim_x, coeffs_x_in_layers, input_x) = prove_sumcheck(
             num_vars, claimed_output, input, hg_x, u
         )
-        input_x = eval_multi_linear_poly(input, u)
         print(f"input_x: {input_x.n}")
 
         eq_x = []
@@ -99,9 +98,9 @@ def prove(
 
         v = random_challenge(num_vars)
         r.extend(v)
-        (claim, coeffs_y_in_layers) = prove_sumcheck(num_vars, claim_y, input, hg_y, v)
-
-        input_y = eval_multi_linear_poly(input, v)
+        (_, coeffs_y_in_layers, input_y) = prove_sumcheck(
+            num_vars, claim_y, input, hg_y, v
+        )
         print("input_y ", input_y.n)
 
         claims = (SingleClaim(u, input_x), SingleClaim(v, input_y))
@@ -156,14 +155,14 @@ def verify(
         v = []
         for _ in range(num_vars):
             v.append(transcript.r.pop())
-        claim_y = verify_sumcheck(num_vars, claimed_output, v, coeffs_in_layers[1])
+        claim_xy = verify_sumcheck(num_vars, claim_y, v, coeffs_in_layers[1])
 
         eq_y = []
         input_y = claim_in_layer[1].eval
         for eq in eq_poly(v):
             eq_y.append(input_y * eq)
 
-        assert claim_y == layer.phase2_eval(
+        assert claim_xy == layer.phase2_eval(
             eq_g, eq_x, eq_y
         ), "unmatched sumcheck evaluation"
 

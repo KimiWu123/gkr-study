@@ -36,11 +36,11 @@ class Layer:
             h_g[x] += eq_g[z] * f3[y]
         return h_g
 
-    def phase1_eval(self, eq_r: List[Field], eq_x: List[Field]) -> Field:
+    def phase1_eval(self, eq_g: List[Field], eq_x: List[Field]) -> Field:
         sum = Field.ZERO()
         for add in self.adds:
             (z, x) = (add[0], add[1])
-            sum += eq_r[z] * eq_x[x]
+            sum += eq_g[z] * eq_x[x]
         return sum
 
     # Algorithm 5, Initialize_PhaseTwo
