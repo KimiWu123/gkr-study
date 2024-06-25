@@ -44,6 +44,7 @@ class Verifier:
     def verify(self, inputs: List[Field], output_claim: SingleClaim, t: Transcript):
         c = self.circuit
 
+        print("== verify ==")
         input_claims = verify(c, output_claim, t)
         print(f"input claims: {input_claims[0].eval.n}, {input_claims[1].eval.n}")
 
@@ -92,6 +93,32 @@ def test_gkr_2layers():
         Field(7),
         Field(1),
         Field(2),
+    ]
+
+    p = Prover(c)
+    (claim, transcript) = p.prove(input)
+
+    v = Verifier(c)
+    v.verify(input, claim, transcript)
+
+
+# The source of this test: https://learnblockchain.cn/article/6199
+def test_gkr_sample():
+    #      4       32       # output claims
+    #      *        *       # layer1
+    #   1    4    2    16
+    #   *    *  *      *    # layer2
+    #   1    2    1    4    # input
+
+    layer1 = Layer(2, 2, [], [(0, 0, 0), (1, 1, 1), (2, 1, 2), (3, 3, 3)])
+    layer2 = Layer(2, 1, [], [(0, 0, 1), (1, 2, 3)])
+    c = Circuit([layer1, layer2])
+
+    input = [
+        Field(1),
+        Field(2),
+        Field(1),
+        Field(4),
     ]
 
     p = Prover(c)

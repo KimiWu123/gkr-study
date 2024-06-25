@@ -72,21 +72,20 @@ def prove_sumcheck(
         assert sum == claim, f"{sum.n} != {claim.n}"
 
         coeffs = [Field.ZERO()] * 3
-        # h2 * hg = (f[b](1 - ri) + f[b+2^(l-i)]) * (g[b](1 - ri) + g[b+2^(l-i)])
-        # = (f[b] * g[b]) +
-        #   ((f[b+2^(l-i)] - f[b]) * g[b] + (g[b+2^(l-i)] - g[b]) * f[b]) * ri +
-        #   (g[b+2^(l-i)] - g[b])(f[b+2^(l-i)] - f[b]) * ri^2
-        # just expand all the coefficient naively
+        # A. Just expand all the coefficient naively
+        #   h2 * hg = (f[b](1 - ri) + f[b+2^(l-i)]) * (g[b](1 - ri) + g[b+2^(l-i)])
+        #   = (f[b] * g[b]) +
+        #     ((f[b+2^(l-i)] - f[b]) * g[b] + (g[b+2^(l-i)] - g[b]) * f[b]) * ri +
+        #     (g[b+2^(l-i)] - g[b])(f[b+2^(l-i)] - f[b]) * ri^2
+        # B. We all know claim = f(0) + f(1) = coeff_0 + (coeff_0 + coeff_1 + coeff_2)
+        #    ==> coeff_1 = claim - 2 * coeff_0 - coeff_2
+        #    In this way, we only need to store coeff_0 and coeff_2
         for b in range(int(len(f) / 2)):
-            coeffs[0] = coeffs[0] + f[2 * b] * g[2 * b]
-            coeffs[1] = (
-                coeffs[1]
-                + (f[2 * b + 1] - f[2 * b]) * g[2 * b]
-                + (g[2 * b + 1] - g[2 * b]) * f[2 * b]
-            )
-            coeffs[2] = coeffs[2] + (f[2 * b + 1] - f[2 * b]) * (
+            coeffs[0] += f[2 * b] * g[2 * b]
+            coeffs[1] += (f[2 * b + 1] - f[2 * b]) * g[2 * b] + (
                 g[2 * b + 1] - g[2 * b]
-            )
+            ) * f[2 * b]
+            coeffs[2] += (f[2 * b + 1] - f[2 * b]) * (g[2 * b + 1] - g[2 * b])
         coeffs_in_layers.append(coeffs)
         print_list(coeffs, "coeffs")
 
